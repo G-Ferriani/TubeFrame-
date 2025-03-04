@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Audio Player</title>
+    <title>YouTube Embedder</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,7 +11,6 @@
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
-            background-color: #f5f5f5;
         }
         h1 {
             text-align: center;
@@ -21,10 +20,6 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .input-group {
             display: flex;
@@ -47,38 +42,22 @@
         button:hover {
             background-color: #a52522;
         }
-        .audio-player {
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .audio-info {
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-bottom: 1px solid #ddd;
-        }
-        .audio-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .now-playing {
-            font-size: 12px;
-            color: #666;
-        }
-        .player-container {
+        #embedPreview {
+            aspect-ratio: 16/9;
             width: 100%;
-            height: 60px;
-            overflow: hidden;
-            position: relative;
-        }
-        .youtube-iframe {
-            position: absolute;
-            top: -240px; /* Hide most of the video, showing just controls */
-            left: 0;
-            width: 100%;
-            height: 315px;
             border: none;
+        }
+        .embed-container {
+            margin-top: 20px;
+        }
+        #embedCode {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
         }
         .hidden {
             display: none;
@@ -86,22 +65,23 @@
     </style>
 </head>
 <body>
-    <h1>YouTube Audio Player</h1>
+    <h1>YouTube Embedder</h1>
     <div class="container">
         <div class="input-group">
             <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here" />
-            <button onclick="playAudio()">Play Audio</button>
+            <button onclick="generateEmbed()">Generate Embed</button>
         </div>
         
-        <div id="audioPlayerSection" class="hidden">
-            <div class="audio-player">
-                <div class="audio-info">
-                    <div class="audio-title" id="videoTitle">Loading...</div>
-                    <div class="now-playing">Now playing audio from YouTube</div>
-                </div>
-                <div class="player-container">
-                    <iframe id="youtubeFrame" class="youtube-iframe" allowfullscreen allow="autoplay"></iframe>
-                </div>
+        <div id="results" class="hidden">
+            <div class="embed-container">
+                <h2>Preview</h2>
+                <iframe id="embedPreview" allowfullscreen></iframe>
+            </div>
+            
+            <div class="embed-container">
+                <h2>Embed Code</h2>
+                <textarea id="embedCode" readonly></textarea>
+                <button onclick="copyEmbedCode()">Copy Code</button>
             </div>
         </div>
     </div>
@@ -113,7 +93,7 @@
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
-        function playAudio() {
+        function generateEmbed() {
             const url = document.getElementById('youtubeUrl').value;
             const videoId = extractVideoId(url);
             
@@ -122,36 +102,20 @@
                 return;
             }
             
-            // Create embed URL with parameters for audio playback focus
-            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&modestbranding=1`;
+            const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            const embedCode = `<iframe width="560" height="315" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
             
-            // Set iframe source
-            document.getElementById('youtubeFrame').src = embedUrl;
-            
-            // Try to get video title
-            fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('videoTitle').textContent = data.title;
-                })
-                .catch(error => {
-                    document.getElementById('videoTitle').textContent = 'YouTube Audio';
-                });
-            
-            // Show player section
-            document.getElementById('audioPlayerSection').classList.remove('hidden');
+            document.getElementById('embedPreview').src = embedUrl;
+            document.getElementById('embedCode').value = embedCode;
+            document.getElementById('results').classList.remove('hidden');
         }
         
-        // Check for URL parameter
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const videoId = urlParams.get('v');
-            
-            if (videoId) {
-                document.getElementById('youtubeUrl').value = `https://www.youtube.com/watch?v=${videoId}`;
-                playAudio();
-            }
-        });
+        function copyEmbedCode() {
+            const embedCodeElement = document.getElementById('embedCode');
+            embedCodeElement.select();
+            document.execCommand('copy');
+            alert('Embed code copied to clipboard!');
+        }
     </script>
 </body>
 </html>
