@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Embedder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            color: #c4302b;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #c4302b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #a52522;
+        }
+        #embedPreview {
+            aspect-ratio: 16/9;
+            width: 100%;
+            border: none;
+        }
+        .embed-container {
+            margin-top: 20px;
+        }
+        #embedCode {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>YouTube Embedder</h1>
+    <div class="container">
+        <div class="input-group">
+            <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here" />
+            <button onclick="generateEmbed()">Generate Embed</button>
+        </div>
+        
+        <div id="results" class="hidden">
+            <div class="embed-container">
+                <h2>Preview</h2>
+                <iframe id="embedPreview" allowfullscreen></iframe>
+            </div>
+            
+            <div class="embed-container">
+                <h2>Embed Code</h2>
+                <textarea id="embedCode" readonly></textarea>
+                <button onclick="copyEmbedCode()">Copy Code</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function extractVideoId(url) {
+            // Handle different YouTube URL formats
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function generateEmbed() {
+            const url = document.getElementById('youtubeUrl').value;
+            const videoId = extractVideoId(url);
+            
+            if (!videoId) {
+                alert('Please enter a valid YouTube URL');
+                return;
+            }
+            
+            const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            const embedCode = `<iframe width="560" height="315" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            
+            document.getElementById('embedPreview').src = embedUrl;
+            document.getElementById('embedCode').value = embedCode;
+            document.getElementById('results').classList.remove('hidden');
+        }
+        
+        function copyEmbedCode() {
+            const embedCodeElement = document.getElementById('embedCode');
+            embedCodeElement.select();
+            document.execCommand('copy');
+            alert('Embed code copied to clipboard!');
+        }
+    </script>
+</body>
+</html>
